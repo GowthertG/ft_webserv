@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<meta charset="UTF-8">
+<head>
+	<title>WebServ</title>
+	<style>
+		.container {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			height: 100vh;
+		}
+		.button {
+			padding: 12px 24px;
+			background-color: #4CAF50;
+			color: white;
+			font-size: 16px;
+			border: none;
+			border-radius: 5px;
+			cursor: pointer;
+			margin: 10px;
+		}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<h1>WebServ</h1>
+			<button class="button" onclick="location.href='/loc/can.html'">template</button>
+			<button class="button" onclick="location.href='/loc0/video.mp4'">Video</button>
+			<button class="button" onclick="location.href='/loc2/'">get cgi</button>
+			<button class="button" onclick="location.href='/loc2/cookie.php'">Check cookies</button>
+			<!-- handle post -->
+			<form id="uploadForm" action="" method="post">
+				<!-- UPLOAD BUTTON -->
+				<input class="button" type="file" name="fileToUpload" id="fileToUpload">
+				<input class="button" type="submit" value="POST CGI">
+			</form> -->
+	</div>
+
+    <script>
+        document.getElementById('fileToUpload').addEventListener('change', function() {
+            var filePath = this.value;
+			console.log(filePath);	
+            var fileName = filePath.split('\\').pop(); // Extracts file name from full path. You may need to change this according to your file path format.
+           console.log(fileName);
+			document.getElementById('uploadForm').action = '/loc2/' + fileName;
+        });
+    </script>
+</body>
+</html>
+
