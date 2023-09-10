@@ -242,6 +242,13 @@ int Response::Handle_cgi_response(Network *c, std::string url)
     std::string script_name = url.substr(url.find_last_of('/') + 1);
     std::string ex = r.getContentType(url);
     std::string path = cnf->serverConfigs[c->request.srv_index].locations[c->request.location_index].root + "/" + script_name;
+    Cgi cgi;
+    cgi.runCgi(script_name, ex, path, c->request);
+
+
+
+
+
     if (ex == "python")
     {
         args[0] = strdup("/usr/bin/python");
