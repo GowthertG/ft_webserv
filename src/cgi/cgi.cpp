@@ -72,7 +72,7 @@ void Cgi::exeCgi(Request &request, std::string &fileToExecutePath, std::string &
     // }
     dup2(output, STDOUT_FILENO);
     close(output);
-    std::cout << args[0] << " " << args << std::endl;
+    std::cout << "arg:::::>" << args[0] << " " << args << std::endl;
     execve(args[0], args, Envp);
     // throw error and send exit code
   }
@@ -95,7 +95,7 @@ std::string &Cgi::cgiHandler(Request &req, std::string &fileToPost, std::string 
     
 
     tmpOutFileName = "tmpOutPut" + genFileName();
-    output = open (tmpOutFileName.c_str(), O_RDWR | O_CREAT);
+    output = open (tmpOutFileName.c_str(), O_RDWR | O_CREAT, 0664);
     if (output == -1)
     {
       perror("open");
@@ -114,23 +114,32 @@ std::string &Cgi::cgiHandler(Request &req, std::string &fileToPost, std::string 
     if (outfileFd == -1)
       exit(3);
     this->exeCgi(req, fileToExecute, method);
-    nRead = read(outfileFd, buffer, BUFFER_SIZE);
+     memset(buffer, 0, BUFFER_SIZE);
+     
+    nRead = read(output, buffer, BUFFER_SIZE);
+    if (nRead == -1) {
+       perror("read");
+    // Handle the error here, such as closing open files and returning an error code.
+}
+    std::cout << "here :===="<< "{"<<output << "}" << std::endl;
+    std::cout << nRead << buffer << std::endl;
+    std::cout << tmpOutFileName << std::endl;
     line.append(buffer, nRead);
-    if (line.find("\r\n\r\n") != std::string::npos)
-    {
-      remain = line.substr(pos + 4);
-      write(outfileFd, remain.c_str(), remain.size());
-    }
-    else
-      write(outfileFd, &buffer, nRead);
-    while (nRead)
-    {
-      memset(buffer, 0, BUFFER_SIZE);
-      nRead = read(outfileFd, buffer, BUFFER_SIZE);
-      if (nRead)
-        write(fdOut, &buffer, nRead);
-    }
-    close(outfileFd);
+    // if (line.find("\r\n\r\n") != std::string::npos)
+    // {
+    //   remain = line.substr(pos + 4);
+    //   write(outfileFd, remain.c_str(), remain.size());
+    // }
+    // else
+    //   write(outfileFd, &buffer, nRead);
+    // while (nRead)
+    // {
+    //   memset(buffer, 0, BUFFER_SIZE);
+    //   nRead = read(outfileFd, buffer, BUFFER_SIZE);
+    //   if (nRead)
+    //     write(fdOut, &buffer, nRead);
+    // }
+    // close(outfileFd);
     return (outfileName);
 }
 
