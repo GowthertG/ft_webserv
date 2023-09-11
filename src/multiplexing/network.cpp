@@ -138,6 +138,7 @@ void Response::send_err(int c_socket, int code)
 
     std::string response = it->second; // get the response from the map using the code as key
     send(c_socket, response.c_str(), response.length(), 0);
+  //  std::cout << "tessst __________________" << std::endl;
 }
 
 int Response::is_allowed_method(std::string method, std::vector<std::string> &methods)
@@ -160,7 +161,6 @@ void Response::send_Get_response(std::string key, Network *c)
             c->is_done = true;
             return;
         }
-
         // Get file size
         c->file.seekg(0, std::ios::end);
         c->file_size = c->file.tellg();
@@ -220,11 +220,13 @@ void Response::send_Get_response(std::string key, Network *c)
 
         if (send(c->get_socket_fd(), buffer, bytes_read, 0) < 1)
         {
-            std::cout << "Error sending response" << std::endl;
+            std::cout << "Error sending response3" << std::endl;
+            c->is_done = true;
             c->file.close();
             return;
         }
 
+        // std::cout << "heree" << c->get_socket_fd() << std::endl;
         c->file_size -= bytes_read;
     }
 }
@@ -233,109 +235,123 @@ int Response::Handle_cgi_response(Network *c, std::string url)
 {
     Response r;
 
-    char *args[3];
-    char *env[] = {NULL};
+    // char *args[3];
+    // char *env[] = {NULL};
     
-    if (r.handle_url(c, url) == 0)
-        return 0;
-    
+    // int input;
+    // if (r.handle_url(c, url) == 0)
+        // return 0;
+    (void) (c);    
+    (void) (url);    
     std::string script_name = url.substr(url.find_last_of('/') + 1);
     std::string ex = r.getContentType(url);
     std::string path = cnf->serverConfigs[c->request.srv_index].locations[c->request.location_index].root + "/" + script_name;
+    std::cout << "hereeer:::" <<  path << std::endl;
     Cgi cgi;
-    cgi.runCgi(script_name, ex, path, c->request);
+    Request a;
+    cgi.cgiHandler(a, path, path, ex);
 
+    
+    // pid_t pid;
+    // pid = fork();
+    // if (!pid)
+    // {
+    //     args[0] = strdup("");
+    //     args[1] = strdup();
+    //     args[2] = NULL;
+    //     if(method == "POST")
+    //     {
+    //         input = open(, O_RDWR);
+    //         dup2();
+    //     }
+    // if (ex == "python")
+    // {
+    //     args[0] = strdup("/usr/bin/python");
+    //     args[1] = strdup(path.c_str());
+    //     args[2] = NULL;
+    // }
+    // else if (ex == "php")
+    // {
+    //     args[0] = strdup("cgi-env/php-cgi");
+    //     args[1] = strdup(path.c_str());
+    //     args[2] = NULL;
+    // }
+    // else
+    // {
+    //     if (ex != "python" && ex != "php")
+    //     {
+    //         for (int i = 0; i < 2; i++){
+    //             free(args[i]);
+    //             free(env[i]);
+    //         }
+    //         return 0;
+    //     }
+    // }
+    // if (c->request.get_met() == "POST")
+    // {
+    //     std::string str = cnf->serverConfigs[c->request.srv_index].locations[c->request.location_index].uploadPath + "/" + script_name;
+    //     int fd2 = open(str.c_str(), O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
+    //     if (fd2 == -1)
+    //     {
+    //         std::cout << "error in open" << std::endl;
+    //         for (int i = 0; i < 2; i++){
+    //             free(args[i]);
+    //         }
+    //         // exit(EXIT_FAILURE);
+    //     }
 
+    //     pid_t pid = fork();
+    //     if (pid == 0)
+    //     {
+    //         // This is the child process
+    //         dup2(fd2, 1);
+    //         if (execve(args[0], args, env) == -1)
+    //         {
+    //             std::cout << "error in execve" << std::endl;
+    //             for (int i = 0; i < 2; i++){
+    //                 free(args[i]);
+    //             }
+    //             exit(EXIT_FAILURE);
+    //         }
+    //     }
+    //     else if (pid > 0)
+    //     {
+    //         // This is the parent process
+    //         sleep(5);
+    //         int status;
+    //         pid_t result = waitpid(pid, &status, WNOHANG);
+    //         if (result == 0)
+    //         {
+    //             // Child process is still running
+    //             kill(pid, SIGKILL);
+    //         }
+    //         close(fd2);
+    //     }
+    //     else
+    //     {
 
+    //         std::cout << "error in fork" << std::endl;
+    //         for (size_t i = 0; i < 2; i++){
+    //             free(args[i]);
+    //         }
+    //         // exit(EXIT_FAILURE);
+    //     }
 
-    if (ex == "python")
-    {
-        args[0] = strdup("/usr/bin/python");
-        args[1] = strdup(path.c_str());
-        args[2] = NULL;
-    }
-    else if (ex == "php")
-    {
-        args[0] = strdup("cgi-env/php-cgi");
-        args[1] = strdup(path.c_str());
-        args[2] = NULL;
-    }
-    else
-    {
-        if (ex != "python" && ex != "php")
-        {
-            for (int i = 0; i < 2; i++){
-                free(args[i]);
-                free(env[i]);
-            }
-            return 0;
-        }
-    }
-    if (c->request.get_met() == "POST")
-    {
-        std::string str = cnf->serverConfigs[c->request.srv_index].locations[c->request.location_index].uploadPath + "/" + script_name;
-        int fd2 = open(str.c_str(), O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-
-        if (fd2 == -1)
-        {
-            std::cout << "error in open" << std::endl;
-            for (int i = 0; i < 2; i++){
-                free(args[i]);
-            }
-            exit(EXIT_FAILURE);
-        }
-
-        pid_t pid = fork();
-        if (pid == 0)
-        {
-            // This is the child process
-            dup2(fd2, 1);
-            if (execve(args[0], args, env) == -1)
-            {
-                std::cout << "error in execve" << std::endl;
-                for (int i = 0; i < 2; i++){
-                    free(args[i]);
-                }
-                exit(EXIT_FAILURE);
-            }
-        }
-        else if (pid > 0)
-        {
-            // This is the parent process
-            sleep(5);
-            int status;
-            pid_t result = waitpid(pid, &status, WNOHANG);
-            if (result == 0)
-            {
-                // Child process is still running
-                kill(pid, SIGKILL);
-            }
-            close(fd2);
-        }
-        else
-        {
-
-            std::cout << "error in fork" << std::endl;
-            for (size_t i = 0; i < 2; i++){
-                free(args[i]);
-            }
-            exit(EXIT_FAILURE);
-        }
-
-        c->_file_name = str;
-        r.send_err(c->get_socket_fd(), 201);
-        c->is_done = true;
-        for (size_t i = 0; i < 2; i++){
-            free(args[i]);
-        }
-        return 1;
-    }
-    else
-    {
-        handle_get(c, args);
-        return 1;
-    }
+    //     c->_file_name = str;
+    //     r.send_err(c->get_socket_fd(), 201);
+    //     c->is_done = true;
+    //     for (size_t i = 0; i < 2; i++){
+    //         free(args[i]);
+    //     }
+    //     return 1;
+    // }
+    // else
+    // {
+    //     handle_get(c, args);
+    //     return 1;
+    // }
+    return 1;
 }
 
 int Response::is_dir(std::string location)
@@ -354,9 +370,15 @@ int Response::post_err(Network *c)
     std::string ex;
 
     int index = check_which_server(c);
-    int l =  r.loc_matched(c->request.get_loc(), index, c);
     if (index == -1)
         index = 0;
+    int l =  r.loc_matched(c->request.get_loc(), index, c);
+    if (l == -1)
+    {
+        r.send_Get_response("404:", c);
+        c->is_done = true;
+        return 0;
+    }
     c->request.srv_index = index;
     c->request.location_index = l;
     ex = c->request.get_loc().substr(c->request.get_loc().find_last_of(".") + 1);
@@ -410,17 +432,26 @@ bool Network::handle_post(Network *net)
 
 void Network::handle_req(const char *req_body, size_t size)
 {
+
   std::string ext;
   std::string str_header;
   std::string body;
   std::string url;
   std::string str(req_body, size);
   int pos;
+  if (str[0] == '\r' && str[1] ==  '\n')
+  {
+    this->request.is_err = 501;
+    return;
+  }
   if (header)
   {
     pos = str.find(SEP);
     str_header = str.substr(0, pos);
-    body = str.substr(pos + 4);
+    if (pos+4<(int)str.size())
+        body = str.substr(pos + 4);
+    else
+        body = WALO;
     request.handle_headers(str_header);
     url = request.get_loc();
     ext = url.substr(url.find_last_of(NO9TA) + WA7ED);

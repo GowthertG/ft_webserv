@@ -7,7 +7,7 @@ CLIENT = client
 all: $(NAME)
 
 $(NAME): $(SRC)
-	@$(CPP) $(CFLAGS) $(SRC) -o $(NAME) 
+	@$(CPP)  $(SRC) -o $(NAME) 
 
 clean:
 

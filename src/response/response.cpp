@@ -31,7 +31,6 @@ std::string Response::getContentType(std::string &filename)
     contentTypeMap[".avi"] = "video/x-msvideo";
     contentTypeMap[".php"] = "php";
     contentTypeMap[".py"] = "python";
-
     std::string contentType = "application/octet-stream";                // default content type is binary
     std::string extension = filename.substr(filename.find_last_of(NO9TA));
     if (contentTypeMap.count(extension) > 0)
@@ -106,7 +105,7 @@ void Response::send_res(Network *net, std::string key)
         if (bytes_read < buff_size)
         {
             if (send(net->get_socket_fd(), buffer, bytes_read, 0) == -1)
-                std::cout << "error sending response2" << std::endl;
+                std::cout << "error sending response" << std::endl;
             net->is_done = true;
             net->file.close();
             return;
@@ -127,8 +126,13 @@ void Response::handle_response(Network *c)
 {
     std::string method = c->request.get_met();
 
-
+    Request req = c->request;
     Response res;
+    if(c->request.is_err){
+        send_err(c->get_socket_fd(), c->request.is_err);
+        c->is_done = true;
+        return;
+    }
     if (method.empty())
         return;
     if (method == "GET")
@@ -165,8 +169,8 @@ void Response::handle_response(Network *c)
             return;
         }
     }
-    else {
-        send_err(c->get_socket_fd(), 501);
+    else if (method != "GET" || method != "DELETE" || method != "POST"){
+        send_err(c->get_socket_fd(), 400);
         c->is_done = true;
     }
 }
@@ -282,10 +286,11 @@ int Response::is_request_in_location(Network *c)
                 }
                 if (is_valid_file(c, index, l) == 1) // if file is valid
                 {
+                    std::cout << index << l << std::endl;
                     if (if_location_has_cgi(index, l) == 1 && access(c->_file_name.c_str(), F_OK) != -1)
                     {
-                        c->_cgi_path = c->request.get_loc();
-                        res.Handle_cgi_response(c, c->_cgi_path);
+                        //  std::cout <<"file name :" << c->_file_name << " cgi path =" << c->_cgi_path << std::endl;
+                        res.Handle_cgi_response(c, c->_file_name);
     
                         return (1);
                     }
@@ -372,7 +377,6 @@ int Response::handle_url(Network *c, std::string url)
 {
     Response r;
     int j = 0;
-
     std::string extension = url.substr(url.find_last_of('.') + 1);
     std::string rootPath = cnf->serverConfigs[c->request.srv_index].locations[c->request.location_index].root;
     std::string cgiPath = cnf->serverConfigs[c->request.srv_index].locations[c->request.location_index].cgiPath[extension];

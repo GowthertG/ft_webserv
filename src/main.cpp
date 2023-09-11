@@ -12,7 +12,7 @@ int main(int argc, char **argv)
     if (ext != CNF)
     {
       std::cout << "Error: Invalid file extension" << std::endl;
-      exit(1);
+      // exit(1);
     }
     Webserv *srv;
     Network *net = NULL;

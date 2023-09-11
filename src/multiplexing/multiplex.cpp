@@ -9,7 +9,7 @@ void Webserv::setuping()
 	std::cout << "Getting address info..." << std::endl;
 	if ((ret = getaddrinfo(0, port.c_str(), &hints, &records))){
 		std::cerr << gai_strerror(ret) << std::endl;
-		exit(1);
+		// exit(1);
 	}
 	std::cout << "Creating Socket..." << std::endl;
 	sock_fd = socket(records->ai_family, records->ai_socktype, records->ai_protocol);
@@ -17,18 +17,18 @@ void Webserv::setuping()
 	maxfd_sock = sock_fd;
 	if (sock_fd == -1){
 		std::cerr << "socket: " << strerror(errno) << std::endl;
-		exit(1);
+		// exit(1);
 	}
 	if (setsockopt(sock_fd, SOL_SOCKET, SO_REUSEADDR, &enb, sizeof(int)) < 0){
 		std::cerr << "setsockopt: " << strerror(errno) << std::endl;
-		exit(1);
+		// exit(1);
 	}
 
 	std::cout << "Binding socket to local address..." << std::endl;
 	if (bind(sock_fd, records->ai_addr, records->ai_addrlen))
 	{
     	std::cerr << "bind: " << strerror(errno) << std::endl;
-    	exit(1);
+    	// exit(1);
   	}
 	freeaddrinfo(records);
 
@@ -36,7 +36,7 @@ void Webserv::setuping()
 	if (listen(sock_fd, BACK_LOG))
 	{
     	std::cerr << "listen: " << strerror(errno) << std::endl;
-    	exit(1);
+    	// exit(1);
   	}
   	FD_SET(sock_fd, &net_fd);
 }
@@ -60,27 +60,39 @@ void Webserv::multiplexing(Network *net, struct timeval &t)
 	init_fdbit();
 	if (select(maxfd_sock + WA7ED, &fdread, &fdwrite, &fderror, &t) < ZERO){
 		std::cerr << "select: " << strerror(errno) << std::endl;
-		exit(1);
+		// exit(1);
 	}
+	// std::cout << maxfd_sock << std::endl;
 	for (int fd_sock = 3; fd_sock < maxfd_sock + WA7ED; fd_sock++){
 		if (fd_sock != sock_fd && !(net = get_network(fd_sock)))
 			continue;
 		if (FD_ISSET(fd_sock, &fdread))
 		{
 			if (fd_sock == sock_fd)
+			{
 				add_network();
+				}
 			else if (net and !net->is_readed){
 				std::cout << "Receiving..." << std::endl;
-				char buff[BUFFER_SIZE];
+  				char buff[BUFFER_SIZE];
 				int bytes = recv(net->get_socket_fd(), buff, sizeof(buff), 0);
+				// std::cout << buff << std::endl;
 				if (bytes < WA7ED)
 					net->is_readed = true;
-				else
+				else{
+
 					net->handle_req(buff, bytes);
+					
+					}
+				memset(buff, 0, sizeof(buff));
 			}
 		}
-		else if (FD_ISSET(fd_sock, &fdwrite))
+		else if (FD_ISSET(fd_sock, &fdwrite)){
+
+			// std::cout << "SEnding REsponse" << std::endl;
 			res.handle_response(net);
-		delete_network(net);	// Client disconnected
+			if (net->is_done)
+				delete_network(net);	// Client disconnected
+  		}
 	}
 }

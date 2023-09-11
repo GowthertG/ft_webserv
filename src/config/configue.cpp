@@ -139,8 +139,11 @@ void ServerConfig::parseLocationConfigLine(std::string& line)
             serverConfigs.back().locations.back().index.push_back(tokens[i]);
     else if (tokens[0] == "autoindex:")
         serverConfigs.back().locations.back().autoindex = tokens[1];
-    else if (tokens.size() == 3 && tokens[0] == "cgi_path:")
-        serverConfigs.back().locations.back().cgiPath[tokens[1]] = tokens[2];
+    else if (tokens[0] == "cgi_path:")
+    {
+        std::string extension = (tokens[1].rfind('.') != std::string::npos) ? tokens[1].substr(tokens[1].rfind('.') + 1) : "";
+        serverConfigs.back().locations.back().cgiPath[extension] = tokens[1];
+    }
     else if (tokens[0] == "methods:")
         for (size_t i = 1; i < tokens.size(); i++)
             serverConfigs.back().locations.back().methods.push_back(tokens[i]);
@@ -181,7 +184,9 @@ ServerConfig::ServerConfig(std::string filename)
             if (i == 1)
                 parseServerConfigLine(line);
             else if (i == 2)
+            {
                 parseLocationConfigLine(line);
+            }
             else
                 std::cout << "Error: " << line << std::endl;
         }
@@ -189,14 +194,14 @@ ServerConfig::ServerConfig(std::string filename)
         if (serverConfigs.empty())
         {
             std::cout << "No server found" << std::endl;
-            exit(1);
+            // exit(1);
         }
         file.close();
     }
     else
     {
         std::cout << "Unable to open file" << std::endl;
-        exit(1);
+        // exit(1);
     }
 
 }

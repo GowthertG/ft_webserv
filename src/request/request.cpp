@@ -1,4 +1,4 @@
-#include "header.hpp"
+#include "../../include/header.hpp"
 
 Request::Request() : chunk_size(0), first_body(true), rcv_size(0),finished(false), is_err(0), req_size(0)
 {

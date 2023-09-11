@@ -33,7 +33,7 @@
 #include "network.hpp"
 #include "request.hpp"
 #include "response.hpp"
-#include "./cgi.hpp"
+#include "cgi.hpp"
 
 extern ServerConfig *cnf;
 

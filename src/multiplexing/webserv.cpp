@@ -21,9 +21,7 @@ Network * Webserv::get_network(int f)
 	while (s < nets.end())
 	{
 		if ((*s)->get_socket_fd() == f)
-		{
 			return (*s);
-		}
 		s++;
 	}
 	return NULL;
@@ -51,6 +49,7 @@ void Webserv::add_network()
 
 void Webserv::delete_network(Network *net)
 {
+  // exit(1);
   if ((net && net->is_done) == true)
   {
     std::cout << "Client disconnected." << std::endl;
@@ -59,6 +58,8 @@ void Webserv::delete_network(Network *net)
       if (net->get_socket_fd() == nets[i]->get_socket_fd())
       {
         FD_CLR(net->get_socket_fd(), &net_fd);
+        FD_CLR(net->get_socket_fd(), &fdwrite);
+        FD_CLR(net->get_socket_fd(), &fdread);
         close(net->get_socket_fd());
         nets.erase(nets.begin() + i);
         delete net;
@@ -66,4 +67,5 @@ void Webserv::delete_network(Network *net)
       }
     }
   }
+  std::cout << "ba9i1\n";
 }
