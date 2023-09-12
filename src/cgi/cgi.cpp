@@ -53,7 +53,7 @@ Cgi::~Cgi(){};
 void Cgi::exeCgi(Request &request, std::string &fileToExecutePath, std::string &method)
 {
   statusCode = 0;
-
+  (void) (method);
   pid = fork();
   if (!pid)
   {
@@ -62,9 +62,8 @@ void Cgi::exeCgi(Request &request, std::string &fileToExecutePath, std::string &
     args[1] = strdup(fileToExecutePath.c_str());
     args[2] = NULL;
     Envp = new char *[request.headers.size() + 8];
-    Envp = {NULL};
+    Envp = NULL;
     // initEnv(request, , fileToExecutePath, method);
-    int index = 0;
     // if (method == "POST")
     // {
     //   dup2(input, STDIN_FILENO);
@@ -72,8 +71,8 @@ void Cgi::exeCgi(Request &request, std::string &fileToExecutePath, std::string &
     // }
     dup2(output, STDOUT_FILENO);
     close(output);
-    std::cout << "arg:::::>" << args[0] << " " << args << std::endl;
     execve(args[0], args, Envp);
+    exit(1);
     // throw error and send exit code
   }
   // if (method == "POST")
@@ -87,6 +86,8 @@ std::string &Cgi::cgiHandler(Request &req, std::string &fileToPost, std::string 
     char buffer[BUFFER_SIZE];
     std::string line, remain;
     int pos, nRead;
+
+    pos = 0;
     memset(buffer, 0, BUFFER_SIZE);
     if (access(fileToPost.c_str(), R_OK))
       exit(4);
@@ -116,30 +117,31 @@ std::string &Cgi::cgiHandler(Request &req, std::string &fileToPost, std::string 
     this->exeCgi(req, fileToExecute, method);
      memset(buffer, 0, BUFFER_SIZE);
      
-    nRead = read(output, buffer, BUFFER_SIZE);
-    if (nRead == -1) {
+     output = open(tmpOutFileName.c_str(), O_RDWR);
+    nRead = read(output, &buffer, BUFFER_SIZE);
+    if (nRead == -1)
        perror("read");
     // Handle the error here, such as closing open files and returning an error code.
-}
-    std::cout << "here :===="<< "{"<<output << "}" << std::endl;
-    std::cout << nRead << buffer << std::endl;
-    std::cout << tmpOutFileName << std::endl;
+    // std::cout << "here :===="<< "{"<<output << "}" << std::endl;
+    // std::cout << nRead << buffer << std::endl;
+    // std::cout << tmpOutFileName << std::endl;
     line.append(buffer, nRead);
-    // if (line.find("\r\n\r\n") != std::string::npos)
-    // {
-    //   remain = line.substr(pos + 4);
-    //   write(outfileFd, remain.c_str(), remain.size());
-    // }
-    // else
-    //   write(outfileFd, &buffer, nRead);
-    // while (nRead)
-    // {
-    //   memset(buffer, 0, BUFFER_SIZE);
-    //   nRead = read(outfileFd, buffer, BUFFER_SIZE);
-    //   if (nRead)
-    //     write(fdOut, &buffer, nRead);
-    // }
-    // close(outfileFd);
+    std::cout << "line =" << line << buffer << std::endl;
+    if (line.find("\r\n\r\n") != std::string::npos)
+    {
+      remain = line.substr(pos + 4);
+      write(outfileFd, remain.c_str(), remain.size());
+    }
+    else
+      write(outfileFd, &buffer, nRead);
+    while (nRead)
+    {
+      memset(buffer, 0, BUFFER_SIZE);
+      nRead = read(outfileFd, buffer, BUFFER_SIZE);
+      if (nRead)
+        write(fdOut, buffer, nRead);
+    }
+    close(outfileFd);
     return (outfileName);
 }
 

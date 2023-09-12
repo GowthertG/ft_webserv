@@ -67,5 +67,4 @@ void Webserv::delete_network(Network *net)
       }
     }
   }
-  std::cout << "ba9i1\n";
 }

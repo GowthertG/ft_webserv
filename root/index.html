@@ -2,51 +2,118 @@
 <html>
 <meta charset="UTF-8">
 <head>
-	<title>WebServ</title>
-	<style>
-		.container {
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-			justify-content: center;
-			height: 100vh;
-		}
-		.button {
-			padding: 12px 24px;
-			background-color: #4CAF50;
-			color: white;
-			font-size: 16px;
-			border: none;
-			border-radius: 5px;
-			cursor: pointer;
-			margin: 10px;
-		}
-	</style>
+    <title>WebServ</title>
+    <style>
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .button {
+            padding: 12px 24px;
+            background-color: #4CAF50;
+            color: white;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+        }
+    </style>
 </head>
 <body>
-	<div class="container">
-		<h1>WebServ</h1>
-			<button class="button" onclick="location.href='/loc/can.html'">template</button>
-			<button class="button" onclick="location.href='/loc0/video.mp4'">Video</button>
-			<button class="button" onclick="location.href='/loc1/'">get cgi</button>
-			<button class="button" onclick="location.href='/loc1/cookie.php'">Check cookies</button>
-			<!-- handle post -->
-			<form id="uploadForm" action="" method="post">
-				<!-- UPLOAD BUTTON -->
-				<input class="button" type="file" name="fileToUpload" id="fileToUpload">
-				<input class="button" type="submit" value="POST CGI">
-			</form>
-	</div>
+    <div class="container">
+        <h1>WebServ</h1>
+        <button class="button" onclick="location.href='/loc/can.html'">template</button>
+        <button class="button" onclick="location.href='/loc0/video.mp4'">Video</button>
+        <button class="button" onclick="location.href='/loc1/'">get cgi</button>
+        <button class="button" onclick="location.href='/loc1/cookie.php'">Check cookies</button>
+
+        <!-- Delete Button and Form -->
+        <form id="deleteForm" action="" method="delete">
+            <label for="fileToDelete">Select a file to delete:</label>
+            <select id="fileToDelete" name="fileToDelete">
+                <!-- Options will be dynamically populated using JavaScript -->
+            </select>
+            <input class="button" type="submit" value="Delete File">
+        </form>
+
+        <!-- handle post -->
+        <form id="uploadForm" action="" method="post">
+            <!-- UPLOAD BUTTON -->
+            <input class="button" type="file" name="fileToUpload" id="fileToUpload">
+            <input class="button" type="submit" value="POST CGI">
+        </form>
+    </div>
 
     <script>
         document.getElementById('fileToUpload').addEventListener('change', function() {
             var filePath = this.value;
-			console.log(filePath);	
+            console.log(filePath);
             var fileName = filePath.split('\\').pop(); // Extracts file name from full path. You may need to change this according to your file path format.
-           console.log(fileName);
-			document.getElementById('uploadForm').action = '/loc2/' + fileName;
+            console.log(fileName);
+            document.getElementById('uploadForm').action = '/loc/' + fileName;
+        });
+
+        // Function to fetch the list of files for deletion
+        function populateFileList() {
+            fetch('http://localhost:8011/loc/list.html') // Replace with the actual endpoint that provides the list of files
+                .then(response => response.text()) // Read the response as plain text
+                .then(data => {
+                    const fileToDeleteSelect = document.getElementById('fileToDelete');
+                    fileToDeleteSelect.innerHTML = ''; // Clear existing options
+
+                    // Split the plain text response into an array (assuming it's newline-separated)
+                    const files = data.split('\n');
+
+                    // Populate select options based on the received data
+                    files.forEach(file => {
+                        if (file.trim() !== '') { // Exclude empty lines
+                            const option = document.createElement('option');
+                            option.value = file; // Set the value to the file path
+                            option.textContent = file; // Set the display text to the file name
+                            console.log(option);
+                            fileToDeleteSelect.appendChild(option);
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching file list:', error);
+                });
+        }
+
+        // Call the function to populate the file list when the page loads
+        populateFileList();
+
+        // Handle Delete Form Submission
+        document.getElementById('deleteForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent the form from actually submitting
+
+            var fileToDelete = 'http://localhost:8011/';
+            fileToDelete += document.getElementById('fileToDelete').value;
+            // console.log(fileToDelete);
+            if (fileToDelete) {
+                // Send a DELETE request to delete the selected file
+                fetch(fileToDelete, { method: 'DELETE' })
+                    .then(response => {
+                        if (response.status === 204) {
+                            alert('File deleted successfully.');
+                            // Refresh the file list after deletion
+                            populateFileList();
+                        } else {
+                            alert('Failed to delete the file.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred while trying to delete the file.');
+                    });
+            } else {
+                alert('Please select a file to delete.');
+            }
         });
     </script>
 </body>
 </html>
-

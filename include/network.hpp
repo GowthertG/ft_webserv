@@ -10,7 +10,7 @@ private:
   struct sockaddr_storage address;
   socklen_t addr_size;
   int socket_fd;
-  bool isListen;
+  // bool isListen;
   int rcved;
   bool header;
 

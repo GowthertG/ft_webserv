@@ -28,7 +28,7 @@ void Network::set_socket_fd(int fd)
 
 void Network::set_address(struct sockaddr_storage &address)
 {
-  address = address;
+  this->address = address;
 }
 std::string toLowerCase(const std::string& str) {
     std::string result = str;
@@ -246,12 +246,12 @@ int Response::Handle_cgi_response(Network *c, std::string url)
     std::string script_name = url.substr(url.find_last_of('/') + 1);
     std::string ex = r.getContentType(url);
     std::string path = cnf->serverConfigs[c->request.srv_index].locations[c->request.location_index].root + "/" + script_name;
-    std::cout << "hereeer:::" <<  path << std::endl;
+    // std::cout << "hereeer:::" <<  path << std::endl;
     Cgi cgi;
     Request a;
     cgi.cgiHandler(a, path, path, ex);
 
-    
+        
     // pid_t pid;
     // pid = fork();
     // if (!pid)

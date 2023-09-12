@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Login Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            transition: background-color 0.3s; /* Smooth background color transition */
+        }
+        .container {
+            text-align: center;
+            margin-top: 10%;
+        }
+        .login-box {
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px; /* Smaller rectangle */
+            margin: 0 auto; /* Center the rectangle */
+            transition: box-shadow 0.3s; /* Smooth box-shadow transition */
+        }
+        .login-box h2 {
+            color: #333;
+        }
+        .login-box input[type="text"],
+        .login-box input[type="password"],
+        .login-box input[type="submit"],
+        .login-box input[type="button"] {
+            width: 85%;
+            padding: 15px;
+            margin: 5px 0; /* Smaller margin */
+            border: 2px solid #ccc;
+            border-radius: 3px;
+        }
+        .login-box input[type="submit"],
+        .login-box input[type="button"] {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .login-box input[type="submit"]:hover,
+        .login-box input[type="button"]:hover {
+            background-color: #45a049;
+        }
+        .signup-page {
+            background-color: #f9f9f9; /* Slightly different background for signup page */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="login-box">
+            <h2>Login to WebServ</h2>
+            <form action="/loc1/login.py" method="GET">
+                <input type="text" name="username" placeholder="Username" required><br>
+                <input type="password" name="password" placeholder="Password" required><br>
+				<input type="button" value="Sign Up" onclick="location.href='/loc1/login.py'" class="signup-page">
+            </form>
+        </div>
+    </div>
+</body>
+</html>
+

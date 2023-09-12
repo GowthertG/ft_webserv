@@ -1,6 +1,7 @@
 #ifndef HEADER_HPP
 #define HEADER_HPP
 
+#include <signal.h>
 #include <string>
 #include <vector>
 #include <map>
